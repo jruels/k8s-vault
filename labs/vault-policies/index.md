@@ -120,12 +120,12 @@ The policy is created or updated; if it already exists.
 ## Display a policy
 List all the policies.
 ```
-vault policy list
+kubectl exec vault-0 -- vault policy list
 ```
 
 Read the `admin` policy
 ```
-vault policy read admin
+kubectl exec vault-0 -- vault policy read admin
 ```
 
 The output displays paths and capabilites defined for this policy 
