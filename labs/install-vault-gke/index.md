@@ -21,7 +21,7 @@ gcloud services enable container.googleapis.com
 
 A Vault cluster that is launched in high-availability requires a Kubernetes cluster with three nodes.
 
-Create a cluster named learn-vault with 3 nodes.
+Create a cluster named `learn-vault` with 3 nodes.
 ```
 gcloud container clusters create learn-vault --num-nodes=3
 ```
@@ -86,11 +86,11 @@ Get all the pods within the default namespace.
 kubectl get pods 
 ```
 
-The vault-0, vault-1, and vault-2 pods deployed run a Vault server and report that they are Running but that they are not ready (0/1). This is because the status check defined in a readinessProbe returns a non-zero exit code.
+The `vault-0`, `vault-1`, and `vault-2` pods deployed run a Vault server and report that they are Running but that they are not ready (0/1). This is because the status check defined in a readinessProbe returns a non-zero exit code.
 
-The vault-agent-injector pod deployed is a Kubernetes Mutation Webhook Controller. The controller intercepts pod events and applies mutations to the pod if specific annotations exist within the request.
+The `vault-agent-injector` pod deployed is a Kubernetes Mutation Webhook Controller. The controller intercepts pod events and applies mutations to the pod if specific annotations exist within the request.
 
-Retrieve the status of Vault on the vault-0 pod.
+Retrieve the status of Vault on the `vault-0` pod.
 
 ```
 kubectl exec vault-0 -- vault status
@@ -124,9 +124,9 @@ Initialize Vault with one key share and one key threshold.
 kubectl exec vault-0 -- vault operator init -key-shares=1 -key-threshold=1 -format=json > cluster-keys.json
 ```
 
-The operator init command generates a master key that it disassembles into key shares -key-shares=1 and then sets the number of key shares required to unseal Vault -key-threshold=1. These key shares are written to the output as unseal keys in JSON format -format=json. Here the output is redirected to a file named cluster-keys.json.
+The `operator init` command generates a master key that it disassembles into key shares `-key-shares=1` and then sets the number of key shares required to unseal Vault `-key-threshold=1`. These key shares are written to the output as unseal keys in JSON format `-format=json`. Here the output is redirected to a file named `cluster-keys.json`.
 
-Display the unseal key found in cluster-keys.json.
+Display the unseal key found in `cluster-keys.json`.
 
 ```
 cat cluster-keys.json | jq -r ".unseal_keys_b64[]"
@@ -142,7 +142,7 @@ VAULT_UNSEAL_KEY=$(cat cluster-keys.json | jq -r ".unseal_keys_b64[]")
 
 After initialization, Vault is configured to know where and how to access the storage, but does not know how to decrypt any of it. Unsealing is the process of constructing the master key necessary to read the decryption key to decrypt the data, allowing access to the Vault.
 
-Unseal Vault running on the vault-0 pod.
+Unseal Vault running on the `vault-0` pod.
 
 ```
 kubectl exec vault-0 -- vault operator unseal $VAULT_UNSEAL_KEY
@@ -167,7 +167,7 @@ Raft Applied Index      24
 
 The operator unseal command reports that Vault is initialized and unsealed.
 
-Retrieve the status of Vault on the vault-0 pod.
+Retrieve the status of Vault on the `vault-0` pod.
 
 ```
 kubectl exec vault-0 -- vault status
@@ -193,7 +193,7 @@ The Vault server is initialized and unsealed.
 
 ## Join the other Vaults to the Vault cluster
 
-The Vault server running on the vault-0 pod is a Vault HA cluster with a single node. To display the list of nodes requires that you are logging in with the root token.
+The Vault server running on the `vault-0` pod is a Vault HA cluster with a single node. To display the list of nodes requires that you are logging in with the root token.
 
 Display the root token found in `cluster-keys.json`.
 ```
@@ -206,7 +206,7 @@ Create a variable named `CLUSTER_ROOT_TOKEN` to capture the Vault unseal key.
 CLUSTER_ROOT_TOKEN=$(cat cluster-keys.json | jq -r ".root_token")
 ```
 
-Login with the root token on the vault-0 pod.
+Login with the root token on the `vault-0` pod.
 ```
 kubectl exec vault-0 -- vault login $CLUSTER_ROOT_TOKEN
 
@@ -225,7 +225,7 @@ identity_policies    []
 policies             ["root"]
 ```
 
-List all the nodes within the Vault cluster for the vault-0 pod.
+List all the nodes within the Vault cluster for the `vault-0` pod.
 ```
 kubectl exec vault-0 -- vault operator raft list-peers
 
@@ -236,7 +236,7 @@ Node                                    Address                        State    
 
 This displays the one node within the Vault cluster. This cluster is addressable through the Kubernetes service vault-0.vault-internal created by the Helm chart. The Vault servers on the other pods need to join this cluster and be unsealed.
 
-Join the Vault server on vault-1 to the Vault cluster.
+Join the Vault server on `vault-1` to the Vault cluster.
 ```
 kubectl exec vault-1 -- vault operator raft join http://vault-0.vault-internal:8200
 
@@ -247,7 +247,7 @@ Joined    true
 
 This Vault server joins the cluster sealed. To unseal the Vault server requires the same unseal key, `VAULT_UNSEAL_KEY`, provided to the first Vault server.
 
-Unseal the Vault server on vault-1 with the unseal key.
+Unseal the Vault server on `vault-1` with the unseal key.
 ```
 kubectl exec vault-1 -- vault operator unseal $VAULT_UNSEAL_KEY
 
@@ -264,12 +264,12 @@ Version            1.5.4
 HA Enabled         true
 ```
 
-The Vault server on vault-1 is now a functional node within the Vault cluster.
+The Vault server on `vault-1` is now a functional node within the Vault cluster.
 
-Join the Vault server on vault-2 to the Vault cluster using the same steps as above.
+Join the Vault server on `vault-2` to the Vault cluster using the same steps as above.
 
 
-List all the nodes within the Vault cluster for the vault-0 pod.
+List all the nodes within the Vault cluster for the `vault-0` pod.
 
 ```
 kubectl exec vault-0 -- vault operator raft list-peers
@@ -287,21 +287,21 @@ Get all the pods within the default namespace, and confirm they are in a `READY`
 
 ## Set a secret in Vault
 
-The web application that you deploy in the Launch a web application section, expects Vault to store a username and password at the path secret/webapp/config. To create this secret requires you to login with the root token, enable the key-value secret engine, and store a secret username and password at that defined path.
+The web application that you deploy in the Launch a web application section, expects Vault to store a username and password at the path `secret/webapp/config`. To create this secret requires you to login with the root token, enable the `key-value` secret engine, and store a secret username and password at that defined path.
 
 First, start an interactive shell session on the vault-0 pod.
 ```
 kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh
 ```
 
-Enable kv-v2 secrets at the path secret.
+Enable `kv-v2` secrets at the path secret.
 ```
 vault secrets enable -path=secret kv-v2
 
 Success! Enabled the kv-v2 secrets engine at: secret/
 ```
 
-Create a secret at path secret/devwebapp/config with a username and password.
+Create a secret at path `secret/devwebapp/config` with a username and password.
 
 ```
 vault kv put secret/devwebapp/config username='giraffe' password='salsa'
@@ -315,7 +315,7 @@ version          1
 ```
 
 
-Verify that the secret is defined at the path secret/data/devwebapp/config.
+Verify that the secret is defined at the path `secret/data/devwebapp/config`.
 ```
 vault kv get secret/devwebapp/config
 
@@ -337,7 +337,7 @@ username    giraffe
 You successfully created the secret for the web application.
 
 
-Lastly, exit the vault-0 pod.
+Lastly, exit the `vault-0` pod.
 ```
 exit
 ```
@@ -348,7 +348,7 @@ The initial root token is a privileged user that can perform any operation at an
 
 Vault provides a Kubernetes authentication method that enables clients to authenticate with a Kubernetes Service Account Token.
 
-First, start an interactive shell session on the vault-0 pod.
+First, start an interactive shell session on the `vault-0` pod.
 
 ```
 kubectl exec --stdin=true --tty=true vault-0 -- /bin/sh
@@ -374,11 +374,11 @@ vault write auth/kubernetes/config \
 
 
 ```
-The token_reviewer_jwt and kubernetes_ca_cert are mounted to the container by Kubernetes when it is created. The environment variable KUBERNETES_PORT_443_TCP_ADDR is defined and references the internal network address of the Kubernetes host.
+The `token_reviewer_jwt` and `kubernetes_ca_cert` are mounted to the container by Kubernetes when it is created. The environment variable `KUBERNETES_PORT_443_TCP_ADDR` is defined and references the internal network address of the Kubernetes host.
 
-For a client of the Vault server to read the secret data defined in the Set a secret in Vault step requires that the read capability be granted for the path secret/data/devwebapp/config.
+For a client of the Vault server to read the secret data defined in the Set a secret in Vault step requires that the read capability be granted for the path `secret/data/devwebapp/config`.
 
-Write out the policy named devwebapp that enables the read capability for secrets at path secret/data/devwebapp/config
+Write out the policy named `devwebapp` that enables the read capability for secrets at path `secret/data/devwebapp/config`
 
 ```
 vault policy write devwebapp - <<EOF
@@ -388,7 +388,7 @@ path "secret/data/devwebapp/config" {
 EOF
 ```
 
-Create a Kubernetes authentication role named devweb-app.
+Create a Kubernetes authentication role named `devweb-app`.
 
 ```
 vault write auth/kubernetes/role/devweb-app \
@@ -399,7 +399,7 @@ vault write auth/kubernetes/role/devweb-app \
 
 ```
 
-The role connects a Kubernetes service account, internal-app (created in the next step), and namespace, default, with the Vault policy, devwebapp. The tokens returned after authentication are valid for 24 hours.
+The role connects a Kubernetes service account, internal-app (created in the next step), and namespace, default, with the Vault policy, `devwebapp`. The tokens returned after authentication are valid for 24 hours.
 
 Lastly, exit the vault-0 pod.
 
@@ -407,7 +407,7 @@ Lastly, exit the vault-0 pod.
 
 The web application pod requires the creation of the internal-app Kubernetes service account specified in the Vault Kubernetes authentication role created in the Configure Kubernetes authentication step.
 
-Create a Kubernetes service account named internal-app.
+Create a Kubernetes service account named `internal-app`.
 ```
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
@@ -441,11 +441,11 @@ spec:
 EOF
 ```
 
-This definition creates a pod with the specified container running with the internal-app Kubernetes service account. The container within the pod is unaware of the Vault cluster. The Vault Injector service reads the annotations to find the secret path, stored within Vault at secret/data/devwebapp/config and the file location, /vault/secrets/secret-credentials.txt, to mount that secret with the pod.
+This definition creates a pod with the specified container running with the internal-app Kubernetes service account. The container within the pod is unaware of the Vault cluster. The Vault Injector service reads the annotations to find the secret path, stored within Vault at `secret/data/devwebapp/config` and the file location, `/vault/secrets/secret-credentials.txt`, to mount that secret with the pod.
 
 Confirm `devwebapp` pod is running 
 
-Display the secrets written to the file /vault/secrets/secret-credentials.txt on the devwebapp pod.
+Display the secrets written to the file `/vault/secrets/secret-credentials.txt` on the `devwebapp` pod.
 
 ```
 kubectl exec --stdin=true --tty=true devwebapp -c devwebapp -- cat /vault/secrets/credentials.txt
