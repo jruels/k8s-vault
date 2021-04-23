@@ -14,3 +14,4 @@ Lab 4: [Getting started with Vault](labs/install-vault)
 ### Day 2   
 Lab 5: [Install Vault on GKE](labs/install-vault-gke)   
 Lab 6: [Vault policies](labs/vault-policies/)    
+Lab 7: [Vault secrets](labs/vault-secrets/)    
