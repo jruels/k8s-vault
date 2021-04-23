@@ -10,3 +10,6 @@ Lab 1: [Install Kubernetes cluster](labs/install-k8s)
 Lab 2: [Deploy multi-tier application](labs/deployments)   
 Lab 3: [Kubernetes Secrets](labs/secrets)   
 Lab 4: [Getting started with Vault](labs/install-vault)   
+
+### Day 2   
+Lab 5: [Install Vault on GKE](labs/install-vault-gke)   
